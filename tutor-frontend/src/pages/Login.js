@@ -4,9 +4,11 @@ import classes from "../styles/login.module.css";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import LoadingButton from "@mui/lab/LoadingButton";
+import { useNavigate } from "react-router-dom";
 
 import * as yup from "yup";
 const Login = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const schema = yup.object().shape({
     host: yup.string().required("Host Is Required"),
@@ -137,7 +139,7 @@ const Login = () => {
                   type="submit"
                   variant="contained"
                   loading={loading}
-                  onClick={handleSubmit(onSubmit)}
+                  onClick={() => navigate("/tutor/courses")}
                 >
                   <span>Log In</span>
                 </LoadingButton>
