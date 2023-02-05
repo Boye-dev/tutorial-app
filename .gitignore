@@ -1,0 +1,7 @@
+.env
+env.txt
+/node_modules
+node_modules
+/client_frontend/node_modules
+client_frontend/node_modules
+api/uploads

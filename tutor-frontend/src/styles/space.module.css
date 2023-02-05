@@ -1,0 +1,9 @@
+.topBody{
+    background: url('../assets/images/randomSvg.png');
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width:40%;
+    height:100%;
+ 
+}

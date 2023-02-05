@@ -1,0 +1,10 @@
+.activeBars{
+    border-bottom: 5px solid rgb(185,141,59);
+    background-color: rgba(128, 128, 128, 0.452);
+    color: rgb(185,141,59)
+}
+.activeBarsSmall{
+    border-bottom: 5px solid rgb(185,141,59);
+   
+    color: rgb(185,141,59)
+}

@@ -1,0 +1,27 @@
+
+.boxImage{
+    background: url('../assets/images/desk.png');
+background-position: center;
+background-repeat: no-repeat;
+background-size: cover;
+width: 50%;
+height: 100vh;
+display: flex;
+align-items: center;
+/* color:rgba(184, 182, 182, 0.452) */
+justify-content: center;
+
+}
+
+.boxImageLogin{
+    background: url('../assets/images/signup.png');
+background-position: center;
+background-repeat: no-repeat;
+background-size: cover;
+width: 50%;
+height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+
+}
