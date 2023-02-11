@@ -1,26 +1,139 @@
-import { Box, Button, Grid, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import LoadingButton from "@mui/lab/LoadingButton";
 import * as yup from "yup";
+import { useNavigate } from "react-router-dom";
+import api from "../api/api";
+import { useMutation } from "react-query";
+import AuthService from "../auth_service";
+import TutorialAppContext from "../context/TutorialAppContext";
+import { Edit, Visibility, VisibilityOff } from "@mui/icons-material";
 
 const SignUpStudent = ({ setIsStudent }) => {
   const [loading, setLoading] = useState(false);
-  const schema = yup.object().shape({
-    host: yup.string().required("Host Is Required"),
-    reason: yup.string().required("Reason Is Required"),
-    returnDate: yup.string().required("Return Date Required"),
-    departDate: yup.string().required("Departure Date Is Required"),
-    type: yup.string().required("Type Is Required"),
-    address: yup.string().required("Address Is Required"),
+  const { setWithExpiry } = AuthService;
+  const [img1, setImage1] = useState();
+  const [picture, setImageFile1] = useState([]);
+  const [err1, setErr1] = useState();
+  const [er1, setEr1] = useState(true);
+  const [state, setState] = useState({
+    values2: false,
+    values3: false,
   });
-  const { handleSubmit, trigger, control } = useForm({
+  const handleShowNewPassword = () => {
+    setState({ ...state, values2: !state.values2 });
+  };
+  const handleShowConfirmNewPassword = () => {
+    setState({ ...state, values3: !state.values3 });
+  };
+  const onImageChange1 = (e) => {
+    const [file] = e.target.files;
+    const imageFile = e.target.files[0];
+
+    if (!imageFile) {
+      setErr1("Please select image.");
+      setEr1(true);
+      return false;
+    }
+
+    if (!imageFile.name.match(/\.(jpg|jpeg|png|gif|jfif|heif|hevc)$/)) {
+      setErr1("Please select valid image.");
+      setEr1(true);
+      return false;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        setImageFile1(imageFile);
+        setErr1(null);
+        setEr1(false);
+      };
+      img.onerror = () => {
+        setErr1("Invalid image content.");
+        setEr1(false);
+        return false;
+      };
+
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(imageFile);
+
+    setImage1(URL.createObjectURL(file));
+  };
+
+  const { setIsSnackOpen, setSnackMessage, setSnackColor } =
+    useContext(TutorialAppContext);
+  const schema = yup.object().shape({
+    firstname: yup.string().required("Firstname Is Required"),
+    lastname: yup.string().required("Lastname Is Required"),
+    username: yup.string().required("User Name Required"),
+    email: yup.string().required("Email Is Required"),
+    phonenumber: yup.string().required("Phone Number Is Required"),
+    password: yup
+      .string()
+      .required("Password Is Required")
+      .matches(
+        /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/,
+        "Password Must Contain An Uppercase, A Digit, and A Special Character"
+      )
+      .min(8, "Password Should Have At Least 8 Characters")
+      .max(32, "Password Should Have At Most 32 Characters"),
+    confirmPassword: yup
+      .string()
+      .required("Confirm Password Is Required")
+      .oneOf(
+        [yup.ref("password"), null],
+        "Confirm Password Must Match Password"
+      ),
+  });
+  const { handleSubmit, trigger, control, getValues } = useForm({
     resolver: yupResolver(schema),
   });
-  const onSubmit = (data) => {
-    console.log(data);
+  const loggIn = async ({ data }) => {
+    return api.post(`/api/student-signup`, data).then((res) => res.data);
   };
+  const { mutate, isLoading } = useMutation(loggIn, {
+    onError: (error) => {
+      setSnackColor("red");
+      setIsSnackOpen(true);
+      setSnackMessage(
+        error.response.data.actualError
+          ? error.response.data.actualError
+          : "Something Went Wrong"
+      );
+    },
+    onSuccess: (data) => {
+      setSnackColor("green");
+      setIsSnackOpen(true);
+      setSnackMessage("Signed Up Successfully");
+      navigate("/login");
+    },
+  });
+  const onSubmit = (payload) => {
+    let formData = new FormData();
+    payload = { ...payload, picture };
+    formData.append("firstname", payload.firstname);
+    formData.append("lastname", payload.lastname);
+    formData.append("email", payload.email);
+    formData.append("phonenumber", payload.phonenumber);
+    formData.append("username", payload.username);
+    formData.append("password", payload.password);
+    formData.append("confirmPassword", payload.confirmPassword);
+    formData.append("profilePhoto", payload.picture);
+    const data = formData;
+    mutate({ data });
+  };
+  const navigate = useNavigate();
   return (
     <>
       <Box sx={{ width: { xs: "100%", md: "50%" } }}>
@@ -53,7 +166,13 @@ const SignUpStudent = ({ setIsStudent }) => {
             }}
           >
             Already a member ?
-            <span style={{ color: "rgb(0,66,130)" }}> Log In</span>
+            <span
+              style={{ color: "rgb(0,66,130)", cursor: "pointer" }}
+              onClick={() => navigate("/login")}
+            >
+              {" "}
+              Log In
+            </span>
           </Typography>
           <Box>
             <Grid container>
@@ -197,6 +316,18 @@ const SignUpStudent = ({ setIsStudent }) => {
                       label="Password"
                       fullWidth
                       {...fields}
+                      type={state.values2 ? "text" : "password"}
+                      InputProps={{
+                        endAdornment: (
+                          <IconButton onClick={handleShowNewPassword}>
+                            {state.values2 === true ? (
+                              <Visibility />
+                            ) : (
+                              <VisibilityOff />
+                            )}
+                          </IconButton>
+                        ),
+                      }}
                       inputRef={ref}
                       error={Boolean(error?.message)}
                       helperText={error?.message}
@@ -210,6 +341,14 @@ const SignUpStudent = ({ setIsStudent }) => {
               <Grid item xs={12} md={6}>
                 <Controller
                   name="confirmPassword"
+                  rules={{
+                    required: "Confirm Password is required",
+                    validate: {
+                      checkIsEmpty: (e) =>
+                        e === getValues("newPassword") ||
+                        "Passwords must be the same",
+                    },
+                  }}
                   control={control}
                   defaultValue=""
                   render={({
@@ -221,6 +360,18 @@ const SignUpStudent = ({ setIsStudent }) => {
                       sx={{ mt: 4 }}
                       label="ConfirmPassword"
                       fullWidth
+                      type={state.values3 ? "text" : "password"}
+                      InputProps={{
+                        endAdornment: (
+                          <IconButton onClick={handleShowConfirmNewPassword}>
+                            {state.values3 === true ? (
+                              <Visibility />
+                            ) : (
+                              <VisibilityOff />
+                            )}
+                          </IconButton>
+                        ),
+                      }}
                       {...fields}
                       inputRef={ref}
                       error={Boolean(error?.message)}
@@ -231,6 +382,62 @@ const SignUpStudent = ({ setIsStudent }) => {
                     />
                   )}
                 />
+              </Grid>
+              <Grid item xs={12} md={6} sx={{ display: "flex", mt: 4 }}>
+                <Box
+                  sx={{
+                    width: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    ml: 1,
+                    mr: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      borderRadius: "100%",
+                      width: "50px",
+                      height: "50px",
+                      color: "black",
+                    }}
+                  >
+                    {img1 && (
+                      <img
+                        style={{
+                          borderRadius: "100%",
+                          width: "50px",
+                          height: "50px",
+                        }}
+                        src={img1}
+                        alt="profile"
+                      />
+                    )}
+                  </Box>
+                </Box>
+                <Box>
+                  <input
+                    type="file"
+                    id="profilePhoto"
+                    style={{ display: "none" }}
+                    onChange={onImageChange1}
+                  />
+                  <label
+                    htmlFor={"profilePhoto"}
+                    style={{ cursor: "pointer", display: "flex" }}
+                  >
+                    <Edit sx={{ color: "rgb(0,66,130)" }} />
+                    <Typography
+                      sx={{
+                        fontSize: "20px",
+                        fontWeight: "300",
+                        color: "rgb(0,66,130)",
+                        textAlign: "center",
+                      }}
+                    >
+                      Profile Picture
+                    </Typography>
+                  </label>
+                </Box>
               </Grid>
             </Grid>
             <Grid container spacing={1}>
@@ -252,7 +459,7 @@ const SignUpStudent = ({ setIsStudent }) => {
                     }}
                     type="submit"
                     variant="contained"
-                    loading={loading}
+                    loading={isLoading}
                     onClick={handleSubmit(onSubmit)}
                   >
                     <span>Sign Up</span>

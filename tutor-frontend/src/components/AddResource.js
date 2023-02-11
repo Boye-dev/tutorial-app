@@ -1,20 +1,61 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
-  AppBar,
   Box,
-  Toolbar,
-  IconButton,
   Typography,
-  Menu,
-  Tooltip,
-  MenuItem,
   Divider,
   Drawer,
   TextField,
-  Button,
+  Select,
+  MenuItem,
+  FormHelperText,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
-import { Close, Send } from "@mui/icons-material";
-const AddResource = ({ openAddResource, setAddResource }) => {
+import { Close } from "@mui/icons-material";
+import { Controller, useForm } from "react-hook-form";
+import * as yup from "yup";
+import { useMutation } from "react-query";
+import { yupResolver } from "@hookform/resolvers/yup";
+import api from "../api/api";
+import TutorialAppContext from "../context/TutorialAppContext";
+import LoadingButton from "@mui/lab/LoadingButton";
+import AuthService from "../auth_service";
+import { useParams } from "react-router-dom";
+const AddResource = ({ openAddResource, setAddResource, refetchResource }) => {
+  const { setIsSnackOpen, setSnackMessage, setSnackColor } =
+    useContext(TutorialAppContext);
+  const { getCurrentUser } = AuthService;
+
+  const { courseId } = useParams();
+  const schema = yup.object().shape({
+    link: yup.string().required("Link Is Required"),
+    description: yup.string().required("Description Is Required"),
+  });
+  const { handleSubmit, trigger, control, reset } = useForm({
+    resolver: yupResolver(schema),
+  });
+  const postResource = async ({ data }) => {
+    return api.post(`/api/resources`, data).then((res) => res.data);
+  };
+  const { mutate, isLoading } = useMutation(postResource, {
+    onError: (error) => {
+      setSnackColor("red");
+      setIsSnackOpen(true);
+      setSnackMessage(error.response.data.actualError);
+    },
+    onSuccess: (data) => {
+      setSnackColor("green");
+      setIsSnackOpen(true);
+      setSnackMessage("Resource Added Successfully");
+      refetchResource();
+      setAddResource(false);
+      reset();
+    },
+  });
+  const onSubmit = (data) => {
+    data = { ...data, tutorId: getCurrentUser()?._id, courseId: courseId };
+    mutate({ data });
+  };
   return (
     <>
       <Drawer
@@ -71,13 +112,53 @@ const AddResource = ({ openAddResource, setAddResource }) => {
         <Divider />
         <Box>
           <Box sx={{ pl: 3, pr: 3, mb: 15 }}>
-            <TextField fullWidth label="Link" sx={{ mt: 4 }} />
-            <TextField
-              fullWidth
-              label="Description"
-              sx={{ mt: 2, mb: 2 }}
-              multiline
-              rows={10}
+            <Controller
+              name="link"
+              control={control}
+              defaultValue=""
+              render={({
+                field: { ref, ...fields },
+                fieldState: { error },
+              }) => (
+                <TextField
+                  variant="outlined"
+                  sx={{ mt: 4, mb: 4 }}
+                  label="Link"
+                  fullWidth
+                  {...fields}
+                  inputRef={ref}
+                  error={Boolean(error?.message)}
+                  helperText={error?.message}
+                  onKeyUp={() => {
+                    trigger("link");
+                  }}
+                />
+              )}
+            />
+            <Controller
+              name="description"
+              control={control}
+              defaultValue=""
+              render={({
+                field: { ref, ...fields },
+                fieldState: { error },
+              }) => (
+                <TextField
+                  variant="outlined"
+                  multiline
+                  rows={10}
+                  sx={{ mb: 6 }}
+                  label="Description"
+                  fullWidth
+                  {...fields}
+                  inputRef={ref}
+                  error={Boolean(error?.message)}
+                  helperText={error?.message}
+                  onKeyUp={() => {
+                    trigger("description");
+                  }}
+                />
+              )}
             />
           </Box>
           <Box
@@ -91,9 +172,15 @@ const AddResource = ({ openAddResource, setAddResource }) => {
               borderTop: "1px solid grey",
             }}
           >
-            <Button variant="contained" color="primary" fullWidth>
+            <LoadingButton
+              onClick={handleSubmit(onSubmit)}
+              variant="contained"
+              color="primary"
+              loading={isLoading}
+              fullWidth
+            >
               Submit
-            </Button>
+            </LoadingButton>
           </Box>
         </Box>
       </Drawer>

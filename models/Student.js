@@ -3,20 +3,22 @@ const mongoose = require("mongoose");
 
 const { Schema } = mongoose;
 
-const UserWithRoleSchema = new Schema(
+const StudentSchema = new Schema(
   {
     firstname: { type: String, required: true },
     lastname: { type: String, required: true },
     username: { type: String, required: true },
+    phonenumber: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
     token: { type: String },
-    role: { type: String, required: true },
-    status: { type: String, default: "Active" },
+    role: { type: String, default: "Student" },
+    profilePhoto: { type: String, required: true },
+    profilePhotoPublicCloudinaryId: { type: String },
   },
   { timestamps: true }
 );
 
-const UserWithRole = mongoose.model("userWithRole", UserWithRoleSchema);
+const Student = mongoose.model("Student", StudentSchema);
 
-module.exports = UserWithRole;
+module.exports = Student;

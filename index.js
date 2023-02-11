@@ -1,7 +1,7 @@
 //Load database configuration file and allow us read environment variables
 require("dotenv").config(); //Comment this out if it doesn't work for you cos of missing env file.
 const { connectToDB } = require("./config/database");
-
+const cron = require("node-cron");
 const express = require("express");
 const app = express();
 const http = require("http");
@@ -10,12 +10,13 @@ const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
+const Message = require("./models/Message");
 
 // Cors configuration
 const corsOptions = {
   origin: [
-    "http://localhost:3000",
-    // "https://pnic.up.railway.app",
+    // "http://localhost:3000",
+    "https://tutorial-app-production.up.railway.app",
   ],
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
@@ -36,7 +37,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //To allow Cookies
 app.use(cookieParser());
-
+// Message.deleteMany({}, (err) => {
+//   if (err) {
+//     console.error(err);
+//   } else {
+//     console.log("All messages were successfully deleted!");
+//   }
+// });
 // Api Docs
 app.get("/api", (req, res) => {
   fs.readFile(path.join(__dirname, "/api/docs/apiDocs.json"), (err, data) => {
@@ -50,13 +57,25 @@ app.get("/api", (req, res) => {
 });
 
 //Routes
-// app.use("/api", require("./controllers/auth")); //The Social login (Google Auth)
-app.use("/api", require("./controllers/userWithRole")); //Admin route
-app.use("/api", require("./controllers/product")); //For Products
+
 app.use("/api", require("./controllers/home"));
-app.use("/api", require("./controllers/sale"));
+// app.use("/api", require("./controllers/sale"));
+app.use("/api", require("./controllers/student"));
+app.use("/api", require("./controllers/tutor"));
+app.use("/api", require("./controllers/course"));
+app.use("/api", require("./controllers/space"));
+app.use("/api", require("./controllers/reply"));
+app.use("/api", require("./controllers/tutorial"));
+app.use("/api", require("./controllers/resource"));
+app.use("/api", require("./controllers/review"));
+app.use("/api", require("./controllers/message"));
+app.use("/api", require("./controllers/conversation"));
 // To show public files/Files from uploads folder  and to upload to cloudinary
 app.use("/api/uploads", express.static("api/uploads"));
+
+cron.schedule("0 0 * * *", () => {
+  app.delete("/api/deleteTutorials");
+});
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === "production") {

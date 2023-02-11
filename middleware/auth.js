@@ -1,6 +1,6 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const { getUserById } = require("../services/userWithRole");
+// const { getUserById } = require("../services/userWithRole");
 
 /* VerifyToken method - Checks that a user is logged in */
 const verifyToken = async (req, res, next) => {
@@ -31,8 +31,8 @@ const verifyToken = async (req, res, next) => {
 /* Assign verifyToken method to the variable name authorize. (i.e Creating a middleware function called authorize which is just the verifyToken method) */
 const authorize = verifyToken;
 
-/* Admin middleware - to verify that there is a logged in user and the user is an admin and not a regular user */
-const isAdmin = (req, res, next) => {
+/* Tutor middleware - to verify that there is a logged in user and the user is an Tutor and not a regular user */
+const isTutor = (req, res, next) => {
   const token =
     req.headers["x-access-token"] ||
     req.headers.authorization ||
@@ -50,10 +50,10 @@ const isAdmin = (req, res, next) => {
     console.log("THE DECODED ", decoded);
     req.user = decoded;
 
-    if (req.user.role !== "Admin") {
+    if (req.user.role !== "Tutor") {
       return res
         .status(401)
-        .json({ error: "Can't access this route, not an Admin." });
+        .json({ error: "Can't access this route, not an Tutor." });
     } else {
       return next();
     }
@@ -62,7 +62,7 @@ const isAdmin = (req, res, next) => {
   }
   return next();
 };
-const isAdminOrStockManager = (req, res, next) => {
+const isStudentOrTutor = (req, res, next) => {
   const token =
     req.headers["x-access-token"] ||
     req.headers.authorization ||
@@ -80,9 +80,9 @@ const isAdminOrStockManager = (req, res, next) => {
     console.log("THE DECODED ", decoded);
     req.user = decoded;
 
-    if (req.user.role !== "StockManager" && req.user.role !== "Admin") {
+    if (req.user.role !== "Student" && req.user.role !== "Tutor") {
       return res.status(401).json({
-        error: "Can't access this route, not an Admin Or Stock Manager.",
+        error: "Can't access this route, not a Student Or Tutor .",
       });
     } else {
       return next();
@@ -92,75 +92,9 @@ const isAdminOrStockManager = (req, res, next) => {
   }
   return next();
 };
-const isCashier = (req, res, next) => {
-  const token =
-    req.headers["x-access-token"] ||
-    req.headers.authorization ||
-    req.cookies.authToken;
-
-  if (!token) {
-    return res.status(401).json({
-      error:
-        "Cannot access this route because a token is required for authentication",
-    });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("THE DECODED ", decoded);
-    req.user = decoded;
-
-    if (req.user.role !== "Cashier") {
-      return res
-        .status(401)
-        .json({ error: "Can't access this route, not a Cashier." });
-    } else {
-      return next();
-    }
-  } catch (error) {
-    console.log("Invalid Token ", error);
-  }
-  return next();
-};
-
-const isActive = async (req, res, next) => {
-  const token =
-    req.headers["x-access-token"] ||
-    req.headers.authorization ||
-    req.cookies.authToken;
-
-  if (!token) {
-    return res.status(401).json({
-      error:
-        "Cannot access this route because a token is required for authentication",
-    });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("THE DECODED ", decoded);
-    req.user = decoded;
-    const userLog = await getUserById(req.user.id);
-    console.log(userLog);
-    if (userLog[0] === true) {
-      if (userLog[1].status !== "Active") {
-        return res
-          .status(401)
-          .json({ error: "Can't access this route,Account Not Active." });
-      } else {
-        return next();
-      }
-    }
-  } catch (error) {
-    console.log("Invalid Token ", error);
-  }
-  return next();
-};
 
 module.exports = {
-  isAdmin,
+  isTutor,
   authorize,
-  isCashier,
-  isAdminOrStockManager,
-  isActive,
+  isStudentOrTutor,
 };

@@ -1,46 +1,36 @@
 /* General/Home route*/
 require("dotenv").config();
 const express = require("express");
+const Student = require("../models/Student");
 const router = express.Router();
-const { isAdmin, authorize, isActive } = require("../middleware/auth");
-
-const { getProductById, getAllProducts } = require("../services/product");
-
-//To get a specific product
-router.get("/product/:id", isActive, async (req, res) => {
-  const { id } = req.params;
-  const product = await getProductById(id);
-  console.log("The specific product", product);
-  if (product[0] !== false) {
-    res.json({ product: product[1] });
-  } else {
-    return res.status(400).json({
-      error: "Product does not exist",
-      actualError: product[1],
-      status: "NOT OK",
-    });
-  }
-});
-
-//To get all products
-router.get("/products", isActive, async (req, res) => {
-  try {
-    const products = await getAllProducts();
-    console.log("All Products", products);
-    res.json({ products });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({
-      error: "Something went wrong",
-      actualError: error,
-      status: "NOT OK",
-    });
-  }
-});
-
+// const { isAdmin, authorize, isActive } = require("../middleware/auth");
+const Tutor = require("../models/Tutor");
 router.get("/logout", (req, res) => {
   res.clearCookie("authToken");
   res.json({ message: "Logout Successful" });
 });
 
+router.get("/get-user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    // Check if the userId belongs to a Tutor
+    const tutor = await Tutor.findById(userId);
+
+    if (tutor) {
+      return res.json(tutor);
+    }
+
+    // Check if the userId belongs to a Student
+    const student = await Student.findById(userId);
+
+    if (student) {
+      return res.json(student);
+    }
+
+    // If the userId does not belong to either a Tutor or a Student
+    return res.status(400).json({ message: "Invalid userId" });
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 module.exports = router;

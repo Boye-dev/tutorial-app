@@ -1,22 +1,40 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import { Snackbar } from "@mui/material";
+import { io } from "socket.io-client";
+import AuthService from "../auth_service";
 
 const TutorialAppContext = createContext();
 export const TutorialAppProvider = ({ children }) => {
   const [isSnackOpen, setIsSnackOpen] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
   const [snackColor, setSnackColor] = useState();
+  const [convoData, setConvoData] = useState(true);
   const handleClose = () => {
     setIsSnackOpen(false);
   };
+  const { getCurrentUser } = AuthService;
+
+  const currenUser = getCurrentUser();
+
+  const socketRef = useRef();
+
+  useEffect(() => {
+    socketRef.current = io("ws://localhost:8900");
+  }, []);
+  useEffect(() => {
+    socketRef.current.emit("addUser", currenUser?._id);
+    socketRef.current.on("getUsers", (users) => {});
+  }, [currenUser]);
   return (
     <TutorialAppContext.Provider
       value={{
         setIsSnackOpen,
         setSnackMessage,
-
+        socketRef,
         snackColor,
         setSnackColor,
+        convoData,
+        setConvoData,
       }}
     >
       {isSnackOpen && (

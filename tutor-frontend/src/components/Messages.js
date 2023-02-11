@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   AppBar,
   Box,
@@ -10,8 +10,37 @@ import {
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import SingleMessage from "./SingleMessage";
+import AuthService from "../auth_service";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "react-query";
+import api from "../api/api";
+import axios from "axios";
+import Conversation from "./Conversation";
+import { io } from "socket.io-client";
+import TutorialAppContext from "../context/TutorialAppContext";
 const Messages = ({ openMessages, setOpenMessages }) => {
   const [openSingle, setOpenSingle] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [conversationId, setConversationId] = useState("");
+  const [loadingConversationns, setLoadingConversations] = useState(true);
+  const { getCurrentUser } = AuthService;
+  const currenUser = getCurrentUser();
+  const [receiverId, setReceiverId] = useState(null);
+  const { convoData, setConvoData } = useContext(TutorialAppContext);
+  const [convo, setConfo] = useState(false);
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const res = await api.get(`api/get-conversation/${currenUser?._id}`);
+        setConversations(res.data);
+        setConfo(true);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getUser();
+  }, [convoData]);
   return (
     <>
       <Drawer
@@ -58,76 +87,33 @@ const Messages = ({ openMessages, setOpenMessages }) => {
           </Box>
           <Divider />
         </Box>
-        {[1, 2, 4, 5, 67, 7, 12, 3, 45, 56, 67, 8].map(() => {
-          return (
-            <Box
-              sx={{
-                cursor: "pointer",
-                ":hover": {
-                  backgroundColor: "rgba(128, 128, 128, 0.452)",
-                },
-              }}
-              onClick={() => {
-                setOpenMessages(false);
-                setOpenSingle(true);
-              }}
-            >
-              <Box sx={{ mt: 2, pl: 3, pr: 3, mb: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "space-around",
-                  }}
-                >
-                  <Box sx={{ width: "50px" }}>
-                    <Box
-                      sx={{
-                        border: "2px solid black",
-                        borderRadius: "100%",
-                        width: "50px",
-                        height: "50px",
-                        color: "black",
-                      }}
-                    ></Box>
-                  </Box>
-                  <Box sx={{ pl: 2, width: `calc(100% - (60px + 15%))` }}>
-                    <Typography
-                      sx={{
-                        color: "grey",
-                        fontSize: "14px",
-                        fontWeight: "700",
-                      }}
-                    >
-                      Oyelola Adeboye
-                    </Typography>
-                    <Typography sx={{ fontSize: "11px", color: "grey" }}>
-                      Lorem ipsubnd uidehjdjsklhgiiuidehjdjsklhgii
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      pl: 2,
-                      width: "calc(100% - (60px + (100% - (60px + 15%))))",
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: { xs: "9px", md: "11px" },
-                        color: "grey",
-                      }}
-                    >
-                      Just Now
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-              <Divider />
-            </Box>
-          );
-        })}
+        {conversations.length === 0 ? (
+          <Typography sx={{ pl: 5 }}>No conversations</Typography>
+        ) : (
+          conversations?.map((item) => {
+            return (
+              <Conversation
+                convo={convo}
+                setConfo={setConfo}
+                conversation={item}
+                conversationId={conversationId}
+                setConversationId={setConversationId}
+                receiverId={receiverId}
+                setReceiverId={setReceiverId}
+                setOpenMessages={setOpenMessages}
+                setOpenSingle={setOpenSingle}
+              />
+            );
+          })
+        )}
       </Drawer>
-      <SingleMessage openSingle={openSingle} setOpenSingle={setOpenSingle} />
+      <SingleMessage
+        openSingle={openSingle}
+        setOpenSingle={setOpenSingle}
+        conversationId={conversationId}
+        receiverId={receiverId}
+        setConversationId={setConversationId}
+      />
     </>
   );
 };

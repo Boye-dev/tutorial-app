@@ -59,19 +59,19 @@ async function uploadToCloudinary(localFilePath) {
     });
 }
 
-async function uploadProductPicToCloudinary(localFilePath) {
+async function uploadProfilePicToCloudinary(localFilePath) {
   console.log(localFilePath);
   // filePathOnCloudinary:
   //path of image we want when it is uploaded to cloudinary
   return cloudinary.uploader
-    .upload(localFilePath, { folder: "products" })
+    .upload(localFilePath, { folder: "studentProfile" })
     .then((result) => {
       //Image has been successfully uploaded on cloudinary so we dont need local image file anymore
       // Remove file from local uploads folder
       fs.unlinkSync(localFilePath);
 
       return {
-        message: "Success, Product Picture(s) uploaded",
+        message: "Success, Profile Picture(s) uploaded",
         url: result.secure_url,
         details: result,
         publicId: result.public_id,
@@ -83,6 +83,26 @@ async function uploadProductPicToCloudinary(localFilePath) {
       console.log(error);
       return { message: "Fail", error: error };
     });
+}
+
+async function updateProfilePicture(publicId, localFilePath) {
+  return await deleteFromCloudinary(publicId).then(async () => {
+    let result = await uploadProfilePicToCloudinary(localFilePath);
+    // console.log("Updated image ", result);
+    if (result.message !== "Fail") {
+      return {
+        message: "Profile Picture updated successfully",
+        url: result.url,
+        publicId: result.publicId,
+        details: result.details,
+      };
+    } else {
+      return {
+        message: "Failed to update image.",
+        error: result.error,
+      };
+    }
+  });
 }
 
 async function deleteFromCloudinary(publicId) {
@@ -114,7 +134,7 @@ async function updateProductPicture(publicId, localFilePath) {
 module.exports = {
   upload,
   uploadToCloudinary,
-  uploadProductPicToCloudinary,
+  uploadProfilePicToCloudinary,
   deleteFromCloudinary,
-  updateProductPicture,
+  updateProfilePicture,
 };

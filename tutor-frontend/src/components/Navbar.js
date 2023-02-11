@@ -23,27 +23,18 @@ import { Chat, Logout, Person, Settings } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import classes from "../styles/navbar.module.css";
 import Messages from "./Messages";
+import AuthService from "../auth_service";
 
 const Navbar = ({ setMobileOpen, mobileOpen }) => {
-  const role = "Tutor";
-  const [open, setOpen] = useState(false);
+  const { getCurrentUser, logout } = AuthService;
+
   const location = useLocation();
-  const { level, course, courseId } = useParams();
-  const [openMessages, setOpenMessages] = useState(false);
-
-  console.log(location.pathname);
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-  const [anchorElUser, setAnchorElUser] = useState(null);
-
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
   const navigate = useNavigate();
+
+  const { level, course, courseId } = useParams();
+
+  const [openMessages, setOpenMessages] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -105,7 +96,42 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                 >
                   <Box
                     onClick={() => {
-                      if (role === "Tutor") {
+                      if (getCurrentUser()?.role === "Tutor") {
+                        navigate(`/tutor/courses`);
+                      } else {
+                        navigate(`/student/levels/`);
+                      }
+                    }}
+                    sx={{
+                      height: "100%",
+
+                      transition: "border-bottom 0.01s",
+                      borderBottomRightRadius: "4px",
+                      borderBottomLeftRadius: "4px",
+                      cursor: "pointer",
+                      p: 2,
+                      ":hover": {
+                        borderBottom: "5px solid rgb(185,141,59)",
+                        // backgroundColor: "rgba(128, 128, 128, 0.452)",
+                        color: "rgb(185,141,59)",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                      }}
+                    >
+                      <Typography sx={{ fontSize: "15px", fontWeight: "700" }}>
+                        Home
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box
+                    onClick={() => {
+                      if (getCurrentUser()?.role === "Tutor") {
                         navigate(`/tutor/courses/${course}/${courseId}/space`);
                       } else {
                         navigate(
@@ -115,10 +141,11 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                     }}
                     className={
                       location.pathname ===
-                        `/student/levels/${level}/courses/${course}/${courseId}/space` ||
-                      (location.pathname ===
-                        `/tutor/courses/${course}/${courseId}/space` &&
-                        classes.activeBars)
+                      `/student/levels/${level}/courses/${course}/${courseId}/space`
+                        ? classes.activeBars
+                        : location.pathname ===
+                            `/tutor/courses/${course}/${courseId}/space` &&
+                          classes.activeBars
                     }
                     sx={{
                       height: "100%",
@@ -150,7 +177,7 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
 
                   <Box
                     onClick={() => {
-                      if (role === "Tutor") {
+                      if (getCurrentUser()?.role === "Tutor") {
                         navigate(`/tutor/courses/${course}/${courseId}/tutors`);
                       } else {
                         navigate(
@@ -160,10 +187,11 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                     }}
                     className={
                       location.pathname ===
-                        `/student/levels/${level}/courses/${course}/${courseId}/tutors` ||
-                      (location.pathname ===
-                        `/tutor/courses/${course}/${courseId}/tutors` &&
-                        classes.activeBars)
+                      `/student/levels/${level}/courses/${course}/${courseId}/tutors`
+                        ? classes.activeBars
+                        : location.pathname ===
+                            `/tutor/courses/${course}/${courseId}/tutors` &&
+                          classes.activeBars
                     }
                     sx={{
                       height: "100%",
@@ -195,7 +223,7 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
 
                   <Box
                     onClick={() => {
-                      if (role === "Tutor") {
+                      if (getCurrentUser()?.role === "Tutor") {
                         navigate(
                           `/tutor/courses/${course}/${courseId}/resources`
                         );
@@ -207,10 +235,11 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                     }}
                     className={
                       location.pathname ===
-                        `/student/levels/${level}/courses/${course}/${courseId}/resources` ||
-                      (location.pathname ===
-                        `/tutor/courses/${course}/${courseId}/resources` &&
-                        classes.activeBars)
+                      `/student/levels/${level}/courses/${course}/${courseId}/resources`
+                        ? classes.activeBars
+                        : location.pathname ===
+                            `/tutor/courses/${course}/${courseId}/resources` &&
+                          classes.activeBars
                     }
                     sx={{
                       height: "100%",
@@ -251,7 +280,7 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    if (role === "Tutor") {
+                    if (getCurrentUser()?.role === "Tutor") {
                       navigate(`/tutor/profile`);
                     } else {
                       navigate(`/student/profile`);
@@ -259,21 +288,33 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                   }}
                 >
                   <Box
-                    sx={{
-                      border: "2px solid black",
-                      borderRadius: "100%",
-                      width: "50px",
-                      height: "50px",
-                      color: "black",
-                    }}
-                  ></Box>
+                    sx={
+                      {
+                        // border: "2px solid black",
+                        // borderRadius: "100%",
+                        // width: "50px",
+                        // height: "50px",
+                        // color: "black",
+                      }
+                    }
+                  >
+                    <img
+                      style={{
+                        borderRadius: "100%",
+                        width: "50px",
+                        height: "50px",
+                      }}
+                      src={getCurrentUser()?.profilePhoto}
+                      alt="profile"
+                    />
+                  </Box>
                   <Typography
                     sx={{
                       pl: 2,
                       color: "white",
                     }}
                   >
-                    Hello Adeboye
+                    Hello {getCurrentUser()?.firstname}
                   </Typography>
                 </Box>
               </Tooltip>
@@ -295,15 +336,56 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                 }}
               >
                 <Box
-                  onClick={() =>
-                    navigate(
-                      `/student/levels/${level}/courses/${course}/${courseId}/space`
-                    )
-                  }
+                  onClick={() => {
+                    if (getCurrentUser()?.role === "Tutor") {
+                      navigate(`/tutor/courses`);
+                    } else {
+                      navigate(`/student/levels/`);
+                    }
+                  }}
+                  sx={{
+                    height: "100%",
+
+                    transition: "border-bottom 0.01s",
+                    borderBottomRightRadius: "4px",
+                    borderBottomLeftRadius: "4px",
+                    cursor: "pointer",
+                    p: 2,
+                    ":hover": {
+                      borderBottom: "5px solid rgb(185,141,59)",
+                      // backgroundColor: "rgba(128, 128, 128, 0.452)",
+                      color: "rgb(185,141,59)",
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      height: "100%",
+                    }}
+                  >
+                    <Typography sx={{ fontSize: "15px" }}>Home</Typography>
+                  </Box>
+                </Box>
+
+                <Box
+                  onClick={() => {
+                    if (getCurrentUser()?.role === "Tutor") {
+                      navigate(`/tutor/courses/${course}/${courseId}/space`);
+                    } else {
+                      navigate(
+                        `/student/levels/${level}/courses/${course}/${courseId}/space`
+                      );
+                    }
+                  }}
                   className={
                     location.pathname ===
-                      `/student/levels/${level}/courses/${course}/${courseId}/space` &&
-                    classes.activeBarsSmall
+                    `/student/levels/${level}/courses/${course}/${courseId}/space`
+                      ? classes.activeBarsSmall
+                      : location.pathname ===
+                          `/tutor/courses/${course}/${courseId}/space` &&
+                        classes.activeBarsSmall
                   }
                   sx={{
                     height: "100%",
@@ -332,15 +414,22 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                 </Box>
 
                 <Box
-                  onClick={() =>
-                    navigate(
-                      `/student/levels/${level}/courses/${course}/${courseId}/tutors`
-                    )
-                  }
+                  onClick={() => {
+                    if (getCurrentUser()?.role === "Tutor") {
+                      navigate(`/tutor/courses/${course}/${courseId}/tutors`);
+                    } else {
+                      navigate(
+                        `/student/levels/${level}/courses/${course}/${courseId}/tutors`
+                      );
+                    }
+                  }}
                   className={
                     location.pathname ===
-                      `/student/levels/${level}/courses/${course}/${courseId}/tutors` &&
-                    classes.activeBarsSmall
+                    `/student/levels/${level}/courses/${course}/${courseId}/tutors`
+                      ? classes.activeBarsSmall
+                      : location.pathname ===
+                          `/tutor/courses/${course}/${courseId}/tutors` &&
+                        classes.activeBarsSmall
                   }
                   sx={{
                     height: "100%",
@@ -369,15 +458,24 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                 </Box>
 
                 <Box
-                  onClick={() =>
-                    navigate(
-                      `/student/levels/${level}/courses/${course}/${courseId}/resources`
-                    )
-                  }
+                  onClick={() => {
+                    if (getCurrentUser()?.role === "Tutor") {
+                      navigate(
+                        `/tutor/courses/${course}/${courseId}/resources`
+                      );
+                    } else {
+                      navigate(
+                        `/student/levels/${level}/courses/${course}/${courseId}/resources`
+                      );
+                    }
+                  }}
                   className={
                     location.pathname ===
-                      `/student/levels/${level}/courses/${course}/${courseId}/resources` &&
-                    classes.activeBarsSmall
+                    `/student/levels/${level}/courses/${course}/${courseId}/resources`
+                      ? classes.activeBarsSmall
+                      : location.pathname ===
+                          `/tutor/courses/${course}/${courseId}/resources` &&
+                        classes.activeBarsSmall
                   }
                   sx={{
                     height: "100%",
@@ -421,7 +519,7 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
             <Box sx={{ paddingTop: "9%" }}>
               <Box
                 onClick={() => {
-                  if (role === "Tutor") {
+                  if (getCurrentUser()?.role === "Tutor") {
                     navigate(`/tutor/profile`);
                   } else {
                     navigate(`/student/profile`);
@@ -449,24 +547,24 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                       alignItems: "center",
                     }}
                   >
-                    <Box
-                      sx={{
-                        border: "2px solid black",
-                        borderRadius: "100%",
-                        width: "50px",
-                        height: "50px",
-                        color: "black",
-                      }}
-                    ></Box>
                     <Box>
-                      {" "}
+                      <img
+                        style={{ borderRadius: "100%" }}
+                        width="50px"
+                        height="50px"
+                        src={getCurrentUser()?.profilePhoto}
+                        alt="profile"
+                      />
+                    </Box>
+                    <Box>
                       <Typography
                         sx={{
                           pl: 2,
                           color: "black",
                         }}
                       >
-                        Adeboye Oyelola
+                        {getCurrentUser()?.firstname}{" "}
+                        {getCurrentUser()?.lastname}
                       </Typography>{" "}
                       <Typography
                         sx={{
@@ -475,7 +573,7 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                           fontSize: "10px",
                         }}
                       >
-                        oyelolaboye@gmail.com
+                        {getCurrentUser()?.email}
                       </Typography>
                     </Box>
                   </Box>
@@ -484,21 +582,18 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
             </Box>
             <Divider />
             <Box sx={{ paddingTop: "9%", pl: "5%", mb: 1, pr: 2 }}>
-              <Typography
-                sx={{
-                  fontSize: "15px",
-                  fontWeight: "bolder",
-                  color: "grey",
-                  pb: 4,
-                }}
-              >
-                Stared Courses
-              </Typography>
               <Box
+                onClick={() => {
+                  if (getCurrentUser()?.role === "Tutor") {
+                    navigate(`/tutor/profile`);
+                  } else {
+                    navigate(`/student/profile`);
+                  }
+                }}
                 sx={{
                   display: "flex",
                   alignItems: "center",
-
+                  justifyContent: "center",
                   p: 1,
                   mb: 3,
                   cursor: "pointer",
@@ -506,239 +601,30 @@ const Navbar = ({ setMobileOpen, mobileOpen }) => {
                   borderTopRightRadius: "40px",
                   borderBottomRightRadius: "40px",
                   transition: "background-color 0.1s ",
-                  ":hover": {
-                    backgroundColor: "rgba(128, 128, 128, 0.452)",
-                    borderTopRightRadius: "40px",
-                    borderBottomRightRadius: "40px",
-                  },
                 }}
               >
-                <Box
-                  sx={{
-                    border: "2px solid black",
-                    borderRadius: "100%",
-                    width: "50px",
-                    height: "50px",
-                    color: "black",
-                  }}
-                ></Box>
-                <Box>
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "black",
-                    }}
-                  >
-                    MATH 101
-                  </Typography>{" "}
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "grey",
-                      fontSize: "10px",
-                    }}
-                  >
-                    Top Rated Tutor - Adeboye
-                  </Typography>
+                <Box sx={{}}>
+                  <Person sx={{ fontSize: "35px" }} />
                 </Box>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-
-                  p: 1,
-                  mb: 3,
-                  cursor: "pointer",
-                  backgroundColor: "none",
-                  borderTopRightRadius: "40px",
-                  borderBottomRightRadius: "40px",
-                  transition: "background-color 0.1s ",
-                  ":hover": {
-                    backgroundColor: "rgba(128, 128, 128, 0.452)",
-                    borderTopRightRadius: "40px",
-                    borderBottomRightRadius: "40px",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    border: "2px solid black",
-                    borderRadius: "100%",
-                    width: "50px",
-                    height: "50px",
-                    color: "black",
-                  }}
-                ></Box>
                 <Box>
                   <Typography
                     sx={{
-                      pl: 2,
+                      pl: 1,
                       color: "black",
                     }}
                   >
-                    MATH 101
+                    Profile
                   </Typography>{" "}
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "grey",
-                      fontSize: "10px",
-                    }}
-                  >
-                    Top Rated Tutor - Adeboye
-                  </Typography>
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-
-                  p: 1,
-                  mb: 3,
-                  cursor: "pointer",
-                  backgroundColor: "none",
-                  borderTopRightRadius: "40px",
-                  borderBottomRightRadius: "40px",
-                  transition: "background-color 0.1s ",
-                  ":hover": {
-                    backgroundColor: "rgba(128, 128, 128, 0.452)",
-                    borderTopRightRadius: "40px",
-                    borderBottomRightRadius: "40px",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    border: "2px solid black",
-                    borderRadius: "100%",
-                    width: "50px",
-                    height: "50px",
-                    color: "black",
-                  }}
-                ></Box>
-                <Box>
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "black",
-                    }}
-                  >
-                    MATH 101
-                  </Typography>{" "}
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "grey",
-                      fontSize: "10px",
-                    }}
-                  >
-                    Top Rated Tutor - Adeboye
-                  </Typography>
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-
-                  p: 1,
-                  mb: 3,
-                  cursor: "pointer",
-                  backgroundColor: "none",
-                  borderTopRightRadius: "40px",
-                  borderBottomRightRadius: "40px",
-                  transition: "background-color 0.1s ",
-                  ":hover": {
-                    backgroundColor: "rgba(128, 128, 128, 0.452)",
-                    borderTopRightRadius: "40px",
-                    borderBottomRightRadius: "40px",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    border: "2px solid black",
-                    borderRadius: "100%",
-                    width: "50px",
-                    height: "50px",
-                    color: "black",
-                  }}
-                ></Box>
-                <Box>
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "black",
-                    }}
-                  >
-                    MATH 101
-                  </Typography>{" "}
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "grey",
-                      fontSize: "10px",
-                    }}
-                  >
-                    Top Rated Tutor - Adeboye
-                  </Typography>
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-
-                  pl: 1,
-                  pr: 1,
-                  pt: 1,
-                  cursor: "pointer",
-                  backgroundColor: "none",
-                  borderTopRightRadius: "40px",
-                  borderBottomRightRadius: "40px",
-                  transition: "background-color 0.1s ",
-                  ":hover": {
-                    backgroundColor: "rgba(128, 128, 128, 0.452)",
-                    borderTopRightRadius: "40px",
-                    borderBottomRightRadius: "40px",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    border: "2px solid black",
-                    borderRadius: "100%",
-                    width: "50px",
-                    height: "50px",
-                    color: "black",
-                  }}
-                ></Box>
-                <Box>
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "black",
-                    }}
-                  >
-                    MATH 101
-                  </Typography>{" "}
-                  <Typography
-                    sx={{
-                      pl: 2,
-                      color: "grey",
-                      fontSize: "10px",
-                    }}
-                  >
-                    Top Rated Tutor - Adeboye
-                  </Typography>
                 </Box>
               </Box>
             </Box>
             <Divider />
             <Box sx={{ paddingTop: "9%", pl: "5%", mb: 1, pr: 2 }}>
               <Box
+                onClick={() => {
+                  logout();
+                  navigate("/login");
+                }}
                 sx={{
                   display: "flex",
                   alignItems: "center",

@@ -14,7 +14,18 @@ const Levels = () => {
   return (
     <>
       <Box sx={{ mt: "100px", ml: 5, mr: 5, width: "100%" }}>
-        <TextField sx={{ width: { xs: "100%", md: "50%" }, mb: 5 }} />
+        <Typography
+          sx={{
+            fontSize: "40px",
+            color: "blue",
+            fontWeight: "700",
+            mt: 2,
+            mb: 5,
+            ml: 5,
+          }}
+        >
+          Levels
+        </Typography>
         <Box
           sx={{
             display: "flex",
@@ -31,14 +42,16 @@ const Levels = () => {
                 sx={{
                   width: { xs: "100%", md: "300px" },
                   boxShadow: "none",
-                  transition: "box-shadow 0.2s",
+                  transition: "transform 0.2s, box-shadow 0.2s ",
                   height: "250px",
                   borderRadius: "8px",
                   backgroundColor: item.color,
+                  transform: "translateY(0)",
                   mb: 5,
                   ":hover": {
                     cursor: "pointer",
                     boxShadow: "0px 2px 10px 2px rgba(128, 128, 128, 0.452)",
+                    transform: "translateY(-5px)",
                   },
                 }}
               >

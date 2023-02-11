@@ -1,22 +1,18 @@
 import React, { useState } from "react";
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  IconButton,
-  Typography,
-  Menu,
-  Tooltip,
-  MenuItem,
-  Divider,
-  Drawer,
-} from "@mui/material";
+import { Box, Typography, Divider, Drawer } from "@mui/material";
 import { Add, Close } from "@mui/icons-material";
 import AddTutorial from "./AddTutorial";
-const UpcomingTutorials = ({ setOpenUpcoming, openUpcoming }) => {
+import AuthService from "../auth_service";
+const UpcomingTutorials = ({
+  setOpenUpcoming,
+  openUpcoming,
+  data,
+  refetchTutorial,
+}) => {
   const [openAddTutorial, setAddTutorial] = useState(false);
 
-  const role = "Tutor";
+  const { getCurrentUser } = AuthService;
+
   return (
     <>
       <Drawer
@@ -26,7 +22,7 @@ const UpcomingTutorials = ({ setOpenUpcoming, openUpcoming }) => {
         sx={{
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
-            width: { xs: "100%", md: "530px" },
+            width: { xs: "100%", md: "400px" },
             backgroundColor: "white",
           },
         }}
@@ -63,38 +59,59 @@ const UpcomingTutorials = ({ setOpenUpcoming, openUpcoming }) => {
           </Box>
           <Divider />
         </Box>
-        {[1, 2, 4, 5, 67, 7, 12, 3, 45, 56, 67, 8].map(() => {
-          return (
-            <Box sx={{}}>
-              <Box sx={{ p: 3 }}>
-                <Typography sx={{ fontSize: "13px", color: "grey" }}>
-                  Introduction To Math
-                </Typography>
-                <Typography sx={{ fontSize: "13px", color: "grey" }}>
-                  In this Tutorial we will be taking a brief description on math
-                </Typography>
-                <Typography sx={{ fontSize: "13px", color: "grey" }}>
-                  7pm - 9pm
-                </Typography>
-                <Typography sx={{ fontSize: "13px", color: "grey" }}>
-                  Virtual
-                </Typography>
-                <Typography sx={{ fontSize: "13px", color: "grey" }}>
-                  https://chat.openai.com/chat
-                </Typography>
-                <Typography sx={{ fontSize: "13px", color: "grey" }}>
-                  Tutor - Oyelola Adeboye
-                </Typography>
+        {data?.length === 0 ? (
+          <Box sx={{ p: 3 }}>
+            <Typography>No Upcoming Tutorials</Typography>
+          </Box>
+        ) : (
+          data?.map((item) => {
+            const date = new Date(item.date);
+            return (
+              <Box sx={{}}>
+                <Box sx={{ p: 3 }}>
+                  <Typography
+                    sx={{ fontSize: "13px", fontWeight: "600", color: "black" }}
+                  >
+                    Title- {item.title}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: "13px", fontWeight: "600", color: "black" }}
+                  >
+                    Description- {item.description}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: "13px", fontWeight: "600", color: "black" }}
+                  >
+                    Date- {date.getDate()}/{date.getMonth()}/
+                    {date.getFullYear()} {item.startTime} - {item.endTime}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: "13px", fontWeight: "600", color: "black" }}
+                  >
+                    Type - {item.type}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: "13px", fontWeight: "600", color: "black" }}
+                  >
+                    Venue - {item.venue}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: "13px", fontWeight: "600", color: "black" }}
+                  >
+                    Tutor - {item.tutorId.lastname} {item.tutorId.firstname}
+                  </Typography>
+                </Box>
+                <Divider sx={{ mb: 1, mt: 1 }} />
               </Box>
-              <Divider sx={{ mb: 1, mt: 1 }} />
-            </Box>
-          );
-        })}
+            );
+          })
+        )}
         <AddTutorial
+          refetchTutorial={refetchTutorial}
           openAddTutorial={openAddTutorial}
           setAddTutorial={setAddTutorial}
         />
-        {role === "Tutor" && (
+        {getCurrentUser()?.role === "Tutor" && (
           <Box
             onClick={() => {
               setAddTutorial(true);
