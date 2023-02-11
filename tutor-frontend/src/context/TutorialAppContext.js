@@ -19,7 +19,7 @@ export const TutorialAppProvider = ({ children }) => {
   const socketRef = useRef();
 
   useEffect(() => {
-    socketRef.current = io("ws://localhost:8900");
+    socketRef.current = io("ws://tutorial-app-production.up.railway.app");
   }, []);
   useEffect(() => {
     socketRef.current.emit("addUser", currenUser?._id);

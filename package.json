@@ -38,6 +38,7 @@
     "nodemailer": "^6.7.3",
     "nodemon": "^2.0.15",
     "react-csv": "^2.2.2",
+    "socket.io": "^4.6.0",
     "uuid": "^8.3.2"
   },
   "engines": {
