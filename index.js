@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 //To allow Cookies
 app.use(cookieParser());
 
-const io = require("socket.io")(https, {
+const io = require("socket.io")(PORT || 8900, {
   cors: {
     origin: "https://tutorial-app-production.up.railway.app",
   },
