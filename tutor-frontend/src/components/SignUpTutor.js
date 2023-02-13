@@ -123,11 +123,7 @@ const SignUpTutor = ({ isStudent, setIsStudent }) => {
     onError: (error) => {
       setSnackColor("red");
       setIsSnackOpen(true);
-      setSnackMessage(
-        error.response.data.actualError
-          ? error.response.data.actualError
-          : "Something Went Wrong"
-      );
+      setSnackMessage(error.response.data.errors);
     },
     onSuccess: (data) => {
       setSnackColor("green");
