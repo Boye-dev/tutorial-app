@@ -4,4 +4,3 @@ env.txt
 node_modules
 /client_frontend/node_modules
 client_frontend/node_modules
-# api/uploads
