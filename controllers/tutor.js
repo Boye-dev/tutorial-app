@@ -322,8 +322,16 @@ router.post("/tutor-login", loginValidator, async (req, res) => {
         httpOnly: true,
       });
 
-      const { _id, firstname, lastname, username, email, role, profilePhoto } =
-        tutorExists;
+      const {
+        _id,
+        firstname,
+        lastname,
+        username,
+        email,
+        role,
+        profilePhoto,
+        phonenumber,
+      } = tutorExists;
 
       let tutor = {
         _id,
@@ -333,6 +341,7 @@ router.post("/tutor-login", loginValidator, async (req, res) => {
         email,
         role,
         profilePhoto,
+        phonenumber,
       };
 
       console.log("The logged in tutor ", tutor);
