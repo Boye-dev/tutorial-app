@@ -106,7 +106,9 @@ const SignUpStudent = ({ setIsStudent }) => {
     onError: (error) => {
       setSnackColor("red");
       setIsSnackOpen(true);
-      setSnackMessage(error.response.data.errors);
+      setSnackMessage(
+        error.response.data.errors || error.response.data.actualError
+      );
     },
     onSuccess: (data) => {
       setSnackColor("green");

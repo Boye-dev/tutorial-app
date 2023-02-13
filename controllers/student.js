@@ -34,7 +34,7 @@ let uploadProfileImageMiddleware = upload.fields([
 //Create Student
 router.post(
   "/student-signup",
-  uploadProfileImageMiddleware,
+  upload.single("profilePhoto"),
   studentSignupValidator(),
   validate,
   async (req, res) => {
@@ -54,56 +54,56 @@ router.post(
         email,
         password,
       };
-      let files = req.files;
-
+      let filepath = req.file && req.file.path;
       // Check if images on the files property are existent
-      let profilePhoto = files.profilePhoto
-        ? files.profilePhoto[0].path
-        : undefined;
+      if (filepath !== undefined) {
+        let result = await uploadProfilePicToCloudinary(filepath);
+        console.log("The result from uploading to cloudinary ", result);
+        let StudentPictureId = result.publicId; //To get the public cloudinary id which will be used to delete the image when updating and deleting products.
+        let profilePhoto = result.url;
+        studentObj.profilePhoto = profilePhoto;
+        studentObj.profilePhotoPublicCloudinaryId = StudentPictureId;
 
-      console.log(`Main Image Path ${profilePhoto}`);
+        console.log("Student picture added ");
+        // To use local file path on disk storage
+        // studentObj.picture = filepath
+        console.log("The Student object ", studentObj);
 
-      // To use Cloudinary
-      let result1 = null;
-
-      profilePhoto != undefined
-        ? (result1 = await uploadProfilePicToCloudinary(profilePhoto))
-        : (result1 = undefined);
-
-      console.log(
-        "The results from uploading the profilePic to cloudinary",
-        result1
-      );
-
-      studentObj.profilePhoto = result1 && result1.url;
-
-      // To save the public Ids of each of the image which we can later use for updating and deleting images from cloudinary
-      studentObj.profilePhotoPublicCloudinaryId = result1 && result1.publicId;
-
-      // To use local file path on disk storage
-      // studentObj.profilePhoto = profilePhoto;
-
-      console.log("The Student Object ", studentObj);
-
-      const check = await createStudent(studentObj);
-      console.log("The Student from DB", check);
-
-      console.log(`Student created `, check);
-      if (check[0] == true) {
-        if (check[1].profilePhoto != undefined) {
+        const check = await createStudent(studentObj);
+        console.log("The Student ", check);
+        if (check[0] !== false) {
+          let tal = check[1];
           return res.status(201).json({
-            message:
-              "New Student Created successfully.Profile picture uploaded.",
+            message: "Student created successfully with picture uploaded",
             status: "OK",
-            student: check[1],
+            Student: tal,
+          });
+        } else {
+          return res.status(400).json({
+            error: "Something went wrong.",
+            actualError: check[1],
+            status: "NOT OK",
           });
         }
       } else {
-        return res.status(422).json({
-          error: "Something went wrong.",
-          actualError: check[1],
-          status: "NOT OK",
-        });
+        console.log("No Student picture added ");
+        console.log("The Student object ", studentObj);
+
+        const check = await createStudent(studentObj);
+        if (check[0] !== false) {
+          console.log("The Student ", check);
+          return res.status(201).json({
+            message: "Student created successfully. No picture uploaded",
+            status: "OK",
+            Student: check[1],
+          });
+        } else {
+          return res.status(400).json({
+            error: "Something went wrong.",
+            actualError: check[1],
+            status: "NOT OK",
+          });
+        }
       }
     } catch (error) {
       console.log(error);

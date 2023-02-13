@@ -34,7 +34,7 @@ let uploadProfileImageMiddleware = upload.fields([
 //Create Tutor
 router.post(
   "/tutor-signup",
-  uploadProfileImageMiddleware,
+  upload.single("profilePhoto"),
   tutorSignupValidator(),
   validate,
   async (req, res) => {
@@ -63,54 +63,56 @@ router.post(
         areaOfSpecialty,
       };
       let files = req.files;
-
+      let filepath = req.file && req.file.path;
       // Check if images on the files property are existent
-      let profilePhoto = files.profilePhoto
-        ? files.profilePhoto[0].path
-        : undefined;
+      if (filepath !== undefined) {
+        let result = await uploadProfilePicToCloudinary(filepath);
+        console.log("The result from uploading to cloudinary ", result);
+        let TutorPictureId = result.publicId; //To get the public cloudinary id which will be used to delete the image when updating and deleting products.
+        let profilePhoto = result.url;
+        tutorObj.profilePhoto = profilePhoto;
+        tutorObj.profilePhotoPublicCloudinaryId = TutorPictureId;
 
-      console.log(`Main Image Path ${profilePhoto}`);
+        console.log("Tutor picture added ");
+        // To use local file path on disk storage
+        // tutorObj.picture = filepath
+        console.log("The Tutor object ", tutorObj);
 
-      // To use Cloudinary
-      let result1 = null;
-
-      profilePhoto != undefined
-        ? (result1 = await uploadProfilePicToCloudinary(profilePhoto))
-        : (result1 = undefined);
-
-      console.log(
-        "The results from uploading the profilePic to cloudinary",
-        result1
-      );
-
-      tutorObj.profilePhoto = result1 && result1.url;
-
-      // To save the public Ids of each of the image which we can later use for updating and deleting images from cloudinary
-      tutorObj.profilePhotoPublicCloudinaryId = result1 && result1.publicId;
-
-      // To use local file path on disk storage
-      // productObj.profilePhoto = profilePhoto;
-
-      console.log("The Tutor Object ", tutorObj);
-
-      const check = await createTutor(tutorObj);
-      console.log("The Tutor from DB", check);
-
-      console.log(`Tutor created `, check);
-      if (check[0] == true) {
-        if (check[1].profilePhoto != undefined) {
+        const check = await createTutor(tutorObj);
+        console.log("The Tutor ", check);
+        if (check[0] !== false) {
+          let tal = check[1];
           return res.status(201).json({
-            message: "New Tutor Created successfully.Profile picture uploaded.",
+            message: "Tutor created successfully with picture uploaded",
             status: "OK",
-            Tutor: check[1],
+            Tutor: tal,
+          });
+        } else {
+          return res.status(400).json({
+            error: "Something went wrong.",
+            actualError: check[1],
+            status: "NOT OK",
           });
         }
       } else {
-        return res.status(422).json({
-          error: "Something went wrong.",
-          actualError: check[1],
-          status: "NOT OK",
-        });
+        console.log("No Tutor picture added ");
+        console.log("The Tutor object ", tutorObj);
+
+        const check = await createTutor(tutorObj);
+        if (check[0] !== false) {
+          console.log("The Tutor ", check);
+          return res.status(201).json({
+            message: "Tutor created successfully. No picture uploaded",
+            status: "OK",
+            Tutor: check[1],
+          });
+        } else {
+          return res.status(400).json({
+            error: "Something went wrong.",
+            actualError: check[1],
+            status: "NOT OK",
+          });
+        }
       }
     } catch (error) {
       console.log(error);
