@@ -5,7 +5,7 @@ module.exports = function (app) {
     "/api",
     createProxyMiddleware({
       // target: "http://localhost:4000",
-      target: "https://tutorial-app-production.up.railway.app",
+      target: "https://tutorial-app.up.railway.app",
 
       changeOrigin: true,
     })

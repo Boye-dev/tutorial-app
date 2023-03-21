@@ -19,7 +19,7 @@ export const TutorialAppProvider = ({ children }) => {
   const socketRef = useRef();
 
   useEffect(() => {
-    socketRef.current = io("wss://tutorial-app-production.up.railway.app");
+    socketRef.current = io("wss://tutorial-app.up.railway.app");
   }, []);
   useEffect(() => {
     socketRef.current.emit("addUser", currenUser?._id);
