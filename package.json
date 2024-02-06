@@ -1,7 +1,7 @@
 {
   "name": "server_backend",
   "version": "1.0.0",
-  "description": "API for PSIM Project",
+  "description": "Tutorial web app",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Boye-dev/pnic-backend.git"
+    "url": "git+https://github.com/Boye-dev/tutorial-app.git"
   },
-  "author": "NGO-TECH",
+  "author": "Boye-dev",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Boye-dev/pnic-backend/issues"
+    "url": "https://github.com/Boye-dev/tutorial-app/issues"
   },
-  "homepage": "https://github.com/Boye-dev/pnic-backend",
+  "homepage": "https://github.com/Boye-dev/tutorial-app",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "braintree": "^3.11.0",
